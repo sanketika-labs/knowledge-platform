@@ -56,8 +56,8 @@ class CompetencyLevel extends CompetencyValidator {
         }
 
         if (errors.nonEmpty) {
-            throw new ClientException("ERR_COMPETENCY_FRAMEWORK_REVIEW", "Competency Level: " + errors.mkString("; "))
-        } else Right(())
+            throw new ClientException("ERR_COMPETENCY_FRAMEWORK", "Competency Level: " + errors.mkString("; "))
+        }
     }
 
     private def validateTimeLimit(timeLimit: Map[String, AnyRef], errors: scala.collection.mutable.ListBuffer[String]): Unit = {

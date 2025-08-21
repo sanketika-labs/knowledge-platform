@@ -49,8 +49,8 @@ class CompetencyFramework extends CompetencyValidator {
         }
 
         if (errors.nonEmpty) {
-            throw new ClientException("ERR_COMPETENCY_FRAMEWORK_REVIEW", "Competency Framework: " + errors.mkString("; "))
-        } else Right(())
+            throw new ClientException("ERR_COMPETENCY_FRAMEWORK", "Competency Framework: " + errors.mkString("; "))
+        }
     }
 
     private def validateSector(sector: Map[String, AnyRef], errors: ListBuffer[String]): Unit = {
