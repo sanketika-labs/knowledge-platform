@@ -5,6 +5,7 @@ import org.sunbird.graph.OntologyEngineContext
 import org.sunbird.graph.dac.model.Node
 import org.sunbird.graph.nodes.DataNode
 import org.sunbird.mimetype.factory.MimeTypeManagerFactory
+import org.sunbird.content.competency.mgr.CompetencyManager
 
 import scala.collection.Map
 import scala.collection.JavaConverters._
@@ -13,6 +14,8 @@ import scala.concurrent.{ExecutionContext, Future}
 object ReviewManager {
 
 	def review(request: Request, node: Node)(implicit oec: OntologyEngineContext, ec: ExecutionContext): Future[Response] = {
+		val primaryCategory = node.getMetadata().getOrDefault("primaryCategory", "").asInstanceOf[String]
+		CompetencyManager.getValidator(primaryCategory).validate(node)
 		val identifier: String = node.getIdentifier
 		val mimeType = node.getMetadata().getOrDefault("mimeType", "").asInstanceOf[String]
 		val mgr = MimeTypeManagerFactory.getManager(node.getObjectType, mimeType)

@@ -11,6 +11,7 @@ import org.sunbird.graph.dac.model.Node
 import org.sunbird.kafka.client.KafkaClient
 import org.sunbird.mimetype.factory.MimeTypeManagerFactory
 import org.sunbird.telemetry.util.LogTelemetryEventUtil
+import org.sunbird.content.competency.mgr.CompetencyManager
 
 import java.util
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,6 +21,8 @@ object PublishManager {
 	private val kfClient = new KafkaClient
 
 	def publish(request: Request, node: Node)(implicit oec: OntologyEngineContext, ec: ExecutionContext): Future[Response] = {
+		val primaryCategory = node.getMetadata().getOrDefault("primaryCategory", "").asInstanceOf[String]
+		CompetencyManager.getValidator(primaryCategory).validate(node)
 		val identifier: String = node.getIdentifier
 		val mimeType = node.getMetadata.getOrDefault(ContentConstants.MIME_TYPE, "").asInstanceOf[String]
 		val mgr = MimeTypeManagerFactory.getManager(node.getObjectType, mimeType)
