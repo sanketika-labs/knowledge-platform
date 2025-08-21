@@ -10,7 +10,7 @@ object CompetencyConstants {
     val SIGNUP_BY_USER: String  = "User"
     val VALID_SIGNUP_BY: Set[String] = Set(SIGNUP_BY_ADMIN, SIGNUP_BY_USER)
 
-    val ENROLLMENT_FULL: String     = "Full Enrollement"
+    val ENROLLMENT_FULL: String     = "Full Enrollment"
     val ENROLLMENT_ENTRANCE: String = "Entrance Exam Based"
     val ENROLLMENT_PROGRESS: String = "Progress Based"
     val VALID_ENROLLMENT_TYPES: Set[String] = Set(ENROLLMENT_FULL, ENROLLMENT_ENTRANCE, ENROLLMENT_PROGRESS)
