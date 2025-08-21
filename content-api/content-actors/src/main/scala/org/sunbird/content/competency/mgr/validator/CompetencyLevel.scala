@@ -6,10 +6,12 @@ import org.sunbird.graph.dac.model.Node
 
 import scala.collection.JavaConverters._
 import com.google.gson.Gson
+import org.slf4j.LoggerFactory
 
 class CompetencyLevel extends CompetencyValidator {
 
     private val gson = new Gson()
+    val logger = LoggerFactory.getLogger("org.sunbird.content.competency.mgr.validator.CompetencyValidator")
 
     override def validate(node: Node): Either[List[String], Unit] = {
         val errors = scala.collection.mutable.ListBuffer[String]()
@@ -32,7 +34,7 @@ class CompetencyLevel extends CompetencyValidator {
             case s: String =>
                 validateTimeLimit(gson.fromJson(s, classOf[java.util.Map[String, AnyRef]]).asScala.toMap, errors)
             case other =>
-                println(s"[COMPETENCY-FRAMEWORK] timeLimit unknown type: ${other.getClass} => $other")
+                logger.warn(s"[COMPETENCY-FRAMEWORK] timeLimit unknown type: ${other.getClass} => $other")
         }
 
         metadata.get("entranceExam").foreach {
@@ -41,7 +43,7 @@ class CompetencyLevel extends CompetencyValidator {
             case s: String =>
                 validateEntranceExam(gson.fromJson(s, classOf[java.util.Map[String, AnyRef]]).asScala.toMap, errors)
             case other =>
-                println(s"[COMPETENCY-FRAMEWORK] entranceExam unknown type: ${other.getClass} => $other")
+                logger.warn(s"[COMPETENCY-FRAMEWORK] entranceExam unknown type: ${other.getClass} => $other")
         }
 
         metadata.get("levelExam").foreach {
@@ -50,7 +52,7 @@ class CompetencyLevel extends CompetencyValidator {
             case s: String =>
                 validateLevelExam(gson.fromJson(s, classOf[java.util.Map[String, AnyRef]]).asScala.toMap, metadata, errors)
             case other =>
-                println(s"[COMPETENCY-FRAMEWORK] levelExam unknown type: ${other.getClass} => $other")
+                logger.warn(s"[COMPETENCY-FRAMEWORK] levelExam unknown type: ${other.getClass} => $other")
         }
 
         if (errors.nonEmpty) {

@@ -7,11 +7,13 @@ import org.sunbird.common.exception.ClientException
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import org.slf4j.LoggerFactory
 import com.google.gson.Gson
 
 class CompetencyFramework extends CompetencyValidator {
 
     private val gson = new Gson()
+    val logger = LoggerFactory.getLogger("org.sunbird.content.competency.mgr.validator.CompetencyValidator")
 
     override def validate(node: Node): Either[List[String], Unit] = {
         val errors = ListBuffer[String]()
@@ -31,7 +33,7 @@ class CompetencyFramework extends CompetencyValidator {
                 val sector = gson.fromJson(s, classOf[java.util.Map[String, AnyRef]]).asScala.toMap
                 validateSector(sector, errors)
             case other =>
-                println(s"[COMPETENCY-FRAMEWORK] sector unknown type: ${other.getClass} => $other")
+                logger.warn(s"[COMPETENCY-FRAMEWORK] sector unknown type: ${other.getClass} => $other")
         }
 
         metadata.get("signupBy").foreach { value =>
