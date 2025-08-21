@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 object ReviewManager {
 
 	def review(request: Request, node: Node)(implicit oec: OntologyEngineContext, ec: ExecutionContext): Future[Response] = {
-		val primaryCategory = node.getMetadata().getOrDefault("primaryCategory", "").asInstanceOf[String]
+		val primaryCategory = node.getMetadata.getOrDefault("primaryCategory", "").asInstanceOf[String]
 		CompetencyManager.getValidator(primaryCategory).validate(node)
 		val identifier: String = node.getIdentifier
 		val mimeType = node.getMetadata().getOrDefault("mimeType", "").asInstanceOf[String]

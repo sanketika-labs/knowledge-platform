@@ -7,15 +7,15 @@ import org.sunbird.common.exception.ClientException
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import com.google.gson.Gson
 
 class CompetencyFramework extends CompetencyValidator {
 
     private val gson = new Gson()
-    val logger = LoggerFactory.getLogger("org.sunbird.content.competency.mgr.validator.CompetencyValidator")
+    val logger: Logger = LoggerFactory.getLogger("org.sunbird.content.competency.mgr.validator.CompetencyValidator")
 
-    override def validate(node: Node): Either[List[String], Unit] = {
+    override def validate(node: Node): Unit = {
         val errors = ListBuffer[String]()
         val metadata = node.getMetadata.asScala.toMap
 

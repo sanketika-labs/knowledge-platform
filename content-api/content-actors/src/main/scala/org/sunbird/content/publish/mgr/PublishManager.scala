@@ -21,7 +21,7 @@ object PublishManager {
 	private val kfClient = new KafkaClient
 
 	def publish(request: Request, node: Node)(implicit oec: OntologyEngineContext, ec: ExecutionContext): Future[Response] = {
-		val primaryCategory = node.getMetadata().getOrDefault("primaryCategory", "").asInstanceOf[String]
+		val primaryCategory = node.getMetadata.getOrDefault("primaryCategory", "").asInstanceOf[String]
 		CompetencyManager.getValidator(primaryCategory).validate(node)
 		val identifier: String = node.getIdentifier
 		val mimeType = node.getMetadata.getOrDefault(ContentConstants.MIME_TYPE, "").asInstanceOf[String]
