@@ -1,12 +1,15 @@
 package org.sunbird.content.competency.mgr.validator
+
 import org.sunbird.content.competency.mgr.constants.CompetencyConstants._
 import org.sunbird.content.competency.mgr.constants.CompetencyErrorMessages._
 import org.sunbird.common.exception.ClientException
 import org.sunbird.graph.dac.model.Node
+import org.sunbird.graph.OntologyEngineContext
 
 import scala.collection.JavaConverters._
 import com.google.gson.Gson
 import org.slf4j.{Logger, LoggerFactory}
+import scala.collection.mutable.ListBuffer
 
 class CompetencyLevel extends CompetencyValidator {
 
@@ -14,19 +17,8 @@ class CompetencyLevel extends CompetencyValidator {
     val logger: Logger = LoggerFactory.getLogger("org.sunbird.content.competency.mgr.validator.CompetencyValidator")
 
     override def validate(node: Node): Unit = {
-        val errors = scala.collection.mutable.ListBuffer[String]()
+        val errors = ListBuffer[String]()
         val metadata = node.getMetadata.asScala.toMap
-
-        REQUIRED_COMPETENCY_LEVEL_FIELDS.foreach { field =>
-            if (!metadata.contains(field) || metadata(field) == null || metadata(field).toString.trim.isEmpty) {
-                errors += s"Missing or empty required field: $field"
-            }
-        }
-
-        metadata.get("name").foreach { name =>
-            if (!VALID_LEVEL_NAMES.contains(name.toString))
-                errors += invalidLevelName(name.toString)
-        }
 
         metadata.get("timeLimit").foreach {
             case tl: java.util.Map[_, _] =>
@@ -60,43 +52,35 @@ class CompetencyLevel extends CompetencyValidator {
         }
     }
 
-    private def validateTimeLimit(timeLimit: Map[String, AnyRef], errors: scala.collection.mutable.ListBuffer[String]): Unit = {
+    private def validateTimeLimit(timeLimit: Map[String, AnyRef], errors: ListBuffer[String]): Unit = {
         if (timeLimit.getOrElse(TIME_LIMIT_ENABLED, TIME_LIMIT_NO).toString == TIME_LIMIT_YES) {
             val duration: Map[String, AnyRef] = timeLimit.get(TIME_LIMIT_DURATION).collect {
                 case d: java.util.Map[_, _] => d.asInstanceOf[java.util.Map[String, AnyRef]].asScala.toMap
             }.getOrElse(Map.empty[String, AnyRef])
 
-            if (!duration.contains(TIME_LIMIT_VALUE)) errors += missingTimeLimitValue()
-            if (!duration.contains(TIME_LIMIT_UNIT))  errors += missingTimeLimitUnit()
+            if (!duration.contains(TIME_LIMIT_VALUE) || duration(TIME_LIMIT_VALUE) == null || duration(TIME_LIMIT_VALUE).toString.trim.isEmpty) {
+                errors += s"$TIME_LIMIT_VALUE is required"
+            }
+
+            if (!duration.contains(TIME_LIMIT_UNIT) || duration(TIME_LIMIT_UNIT) == null || duration(TIME_LIMIT_UNIT).toString.trim.isEmpty) {
+                errors += s"$TIME_LIMIT_UNIT is required"
+            }
         }
     }
 
-    private def validateLevelExam(exam: Map[String, AnyRef], metadata: Map[String, AnyRef], errors: scala.collection.mutable.ListBuffer[String]): Unit = {
-        if (!exam.contains(LEVEL_EXAM_COURSE_ID))
+    private def validateLevelExam(exam: Map[String, AnyRef], metadata: Map[String, AnyRef], errors: ListBuffer[String]): Unit = {
+        if (!exam.contains(LEVEL_EXAM_COURSE_ID)) {
             errors += missingLevelExamCourseId()
-
-        val passingCriteria = metadata
-            .get(PASSING_CRITERIA)
-            .map {
-                case pc: java.util.Map[_, _] => pc.asInstanceOf[java.util.Map[String, AnyRef]].asScala.toMap
-                case s: String               => gson.fromJson(s, classOf[java.util.Map[String, AnyRef]]).asScala.toMap
-            }
-            .getOrElse(Map.empty[String, AnyRef])
-
-        val mustPass = passingCriteria.getOrElse(PASSING_CRITERIA_MUST_PASS, TIME_LIMIT_NO).toString
-        if (!PASSING_CRITERIA_VALID.contains(mustPass))
-            errors += invalidPassingCriteria(mustPass)
+        }
     }
 
-    private def validateEntranceExam(exam: Map[String, AnyRef], errors: scala.collection.mutable.ListBuffer[String]): Unit = {
-        val enabled = exam.getOrElse(ENTRANCE_EXAM_ENABLED, TIME_LIMIT_NO).toString
-        if (!ENTRANCE_EXAM_VALID.contains(enabled))
-            errors += invalidEntranceExamEnabled(enabled)
-
-        if (enabled == TIME_LIMIT_YES) {
+    private def validateEntranceExam(exam: Map[String, AnyRef], errors: ListBuffer[String]): Unit = {
+        val enabled = exam.getOrElse(ENTRANCE_EXAM_ENABLED, "No").toString
+        if (enabled == "Yes") {
             val courseId = exam.getOrElse(ENTRANCE_EXAM_COURSE_ID, "").toString
-            if (courseId.trim.isEmpty)
+            if (courseId.trim.isEmpty) {
                 errors += missingEntranceExamCourseId()
+            }
         }
     }
 }
