@@ -1,8 +1,6 @@
 package org.sunbird.content.competency.mgr.validator
 
 import org.sunbird.graph.dac.model.Node
-import org.sunbird.content.competency.mgr.constants.CompetencyConstants._
-import org.sunbird.content.competency.mgr.constants.CompetencyErrorMessages._
 import org.sunbird.common.exception.ClientException
 
 import scala.collection.JavaConverters._

@@ -4,7 +4,6 @@ import org.sunbird.content.competency.mgr.constants.CompetencyConstants._
 import org.sunbird.content.competency.mgr.constants.CompetencyErrorMessages._
 import org.sunbird.common.exception.ClientException
 import org.sunbird.graph.dac.model.Node
-import org.sunbird.graph.OntologyEngineContext
 
 import scala.collection.JavaConverters._
 import com.google.gson.Gson
@@ -59,11 +58,11 @@ class CompetencyLevel extends CompetencyValidator {
             }.getOrElse(Map.empty[String, AnyRef])
 
             if (!duration.contains(TIME_LIMIT_VALUE) || duration(TIME_LIMIT_VALUE) == null || duration(TIME_LIMIT_VALUE).toString.trim.isEmpty) {
-                errors += s"$TIME_LIMIT_VALUE is required"
+                errors += s"timeLimit.duration.$TIME_LIMIT_VALUE is required"
             }
 
             if (!duration.contains(TIME_LIMIT_UNIT) || duration(TIME_LIMIT_UNIT) == null || duration(TIME_LIMIT_UNIT).toString.trim.isEmpty) {
-                errors += s"$TIME_LIMIT_UNIT is required"
+                errors += s"timeLimit.duration.$TIME_LIMIT_UNIT is required"
             }
         }
     }
