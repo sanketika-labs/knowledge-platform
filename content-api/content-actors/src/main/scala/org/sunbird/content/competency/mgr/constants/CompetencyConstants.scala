@@ -1,7 +1,6 @@
 package org.sunbird.content.competency.mgr.constants
 
 object CompetencyConstants {
-    // Primary categories
     val COMPETENCY_FRAMEWORK: String = "Competency Framework"
     val COMPETENCY_LEVEL: String     = "Competency Level"
 

@@ -2,22 +2,30 @@ package org.sunbird.content.competency.mgr.validator
 
 import org.sunbird.content.competency.mgr.constants.CompetencyConstants._
 import org.sunbird.content.competency.mgr.constants.CompetencyErrorMessages._
+import org.sunbird.content.competency.mgr.CompetencyManager.validateCourseExists
 import org.sunbird.common.exception.ClientException
 import org.sunbird.graph.dac.model.Node
+import org.sunbird.graph.OntologyEngineContext
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.ExecutionContext
+
 import com.google.gson.Gson
 import org.slf4j.{Logger, LoggerFactory}
-import scala.collection.mutable.ListBuffer
+
 
 class CompetencyLevel extends CompetencyValidator {
 
     private val gson = new Gson()
-    val logger: Logger = LoggerFactory.getLogger("org.sunbird.content.competency.mgr.validator.CompetencyValidator")
+    val logger: Logger =
+        LoggerFactory.getLogger("org.sunbird.content.competency.mgr.validator.CompetencyValidator")
 
-    override def validate(node: Node): Unit = {
+    override def validate(node: Node)(implicit oec: OntologyEngineContext, ec: ExecutionContext): Unit = {
+        implicit val parentNode: Node = node
         val errors = ListBuffer[String]()
         val metadata = node.getMetadata.asScala.toMap
+
 
         metadata.get("timeLimit").foreach {
             case tl: java.util.Map[_, _] =>
@@ -67,18 +75,30 @@ class CompetencyLevel extends CompetencyValidator {
         }
     }
 
-    private def validateLevelExam(exam: Map[String, AnyRef], metadata: Map[String, AnyRef], errors: ListBuffer[String]): Unit = {
+    private def validateLevelExam(
+                                     exam: Map[String, AnyRef],
+                                     metadata: Map[String, AnyRef],
+                                     errors: ListBuffer[String]
+                                 )(implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Unit = {
         if (!exam.contains(LEVEL_EXAM_COURSE_ID)) {
             errors += missingLevelExamCourseId()
+        } else {
+            val courseId = exam.getOrElse(LEVEL_EXAM_COURSE_ID, "").toString
+            validateCourseExists(courseId, "Level Exam", errors)
         }
     }
 
-    private def validateEntranceExam(exam: Map[String, AnyRef], errors: ListBuffer[String]): Unit = {
+    private def validateEntranceExam(
+                                        exam: Map[String, AnyRef],
+                                        errors: ListBuffer[String]
+                                    )(implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Unit = {
         val enabled = exam.getOrElse(ENTRANCE_EXAM_ENABLED, "No").toString
         if (enabled == "Yes") {
             val courseId = exam.getOrElse(ENTRANCE_EXAM_COURSE_ID, "").toString
             if (courseId.trim.isEmpty) {
                 errors += missingEntranceExamCourseId()
+            } else {
+                validateCourseExists(courseId, "Entrance Exam", errors)
             }
         }
     }
