@@ -60,7 +60,7 @@ class CompetencyLevel extends CompetencyValidator {
     }
 
     private def validateTimeLimit(timeLimit: Map[String, AnyRef], errors: ListBuffer[String]): Unit = {
-        if (timeLimit.getOrElse(TIME_LIMIT_ENABLED, TIME_LIMIT_NO).toString == TIME_LIMIT_YES) {
+        if (timeLimit.getOrElse(TIME_LIMIT_ENABLED, TIME_NO).toString == TIME_YES) {
             val duration: Map[String, AnyRef] = timeLimit.get(TIME_LIMIT_DURATION).collect {
                 case d: java.util.Map[_, _] => d.asInstanceOf[java.util.Map[String, AnyRef]].asScala.toMap
             }.getOrElse(Map.empty[String, AnyRef])
@@ -93,7 +93,7 @@ class CompetencyLevel extends CompetencyValidator {
                                         errors: ListBuffer[String]
                                     )(implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Unit = {
         val enabled = exam.getOrElse(ENTRANCE_EXAM_ENABLED, "No").toString
-        if (enabled == "Yes") {
+        if (enabled == TIME_YES) {
             val courseId = exam.getOrElse(ENTRANCE_EXAM_COURSE_ID, "").toString
             if (courseId.trim.isEmpty) {
                 errors += missingEntranceExamCourseId()

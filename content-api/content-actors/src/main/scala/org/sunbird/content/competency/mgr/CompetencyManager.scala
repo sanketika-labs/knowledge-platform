@@ -8,10 +8,8 @@ import org.sunbird.graph.nodes.DataNode
 import org.sunbird.graph.dac.model.Node
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.ExecutionContext
-
+import scala.concurrent.{ExecutionContext, Future}
 import org.apache.commons.lang3.StringUtils
-
 
 object CompetencyManager {
     private val defaultValidator = new CompetencyFramework
@@ -23,29 +21,30 @@ object CompetencyManager {
     def getValidator(primaryCategory: String): CompetencyValidator = {
         validators.getOrElse(primaryCategory, defaultValidator)
     }
-    
-    // Validate that the given courseId exists and is of contentType Course and status Live
+
+    //Validate that the given courseId exists and is of contentType=Course and status=Live.
     def validateCourseExists(courseId: String, fieldName: String, errors: ListBuffer[String])
-                                    (implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Unit = {
+                            (implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Future[Unit] = {
         if (StringUtils.isBlank(courseId)) {
             errors += s"$fieldName courseId is missing"
+            Future.successful(())
         } else {
             val request = new Request()
             if (request.getContext == null) {
                 request.setContext(new java.util.HashMap[String, AnyRef]())
             }
+
             // Copy metadata from parent node (Competency Level)
             val parentMetadata = parentNode.getMetadata
             val graphId        = parentNode.getGraphId.toLowerCase()
             val channel        = parentMetadata.getOrDefault("channel", "").toString.toLowerCase()
             val objectType     = parentMetadata.getOrDefault("objectType", "").toString.toLowerCase()
-            // val version        = parentMetadata.getOrDefault("version", "").toString.toLowerCase()
 
             request.getContext.put("identifier", courseId)
             request.getContext.put("graph_id", graphId)
             request.getContext.put("channel", channel)
             request.getContext.put("schemaName", objectType)
-            // We are hardcoding version to 1.0 as we may not have same version for course as that of competency level
+            // Hardcoding version to 1.0 (course may not match competency level version)
             request.getContext.put("version", "1.0")
             request.getContext.put("objectType", objectType)
 
@@ -56,9 +55,10 @@ object CompetencyManager {
                 if (node == null) {
                     errors += s"$fieldName courseId $courseId not found"
                 } else {
-                    val metadata = node.getMetadata
-                    val status = metadata.getOrDefault("status", "").toString
+                    val metadata    = node.getMetadata
+                    val status      = metadata.getOrDefault("status", "").toString
                     val contentType = metadata.getOrDefault("contentType", "").toString
+
                     if (!"Course".equalsIgnoreCase(contentType)) {
                         errors += s"$fieldName courseId $courseId has invalid contentType: $contentType (expected Course)"
                     } else if (!"Live".equalsIgnoreCase(status)) {
