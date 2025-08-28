@@ -14,12 +14,16 @@ import scala.concurrent.{ExecutionContext, Future}
 object ReviewManager {
 
 	def review(request: Request, node: Node)(implicit oec: OntologyEngineContext, ec: ExecutionContext): Future[Response] = {
-		val primaryCategory = node.getMetadata.getOrDefault("primaryCategory", "").asInstanceOf[String]
-		CompetencyManager.getValidator(primaryCategory).validate(node)
-		val identifier: String = node.getIdentifier
-		val mimeType = node.getMetadata().getOrDefault("mimeType", "").asInstanceOf[String]
-		val mgr = MimeTypeManagerFactory.getManager(node.getObjectType, mimeType)
-		val reviewFuture: Future[Map[String, AnyRef]] = mgr.review(identifier, node)
+		// Competency validation check
+        val validation: Future[Unit] = CompetencyManager.validateNode(node)
+
+		val reviewFuture = validation.flatMap { _ =>
+            val identifier = node.getIdentifier
+            val mimeType = node.getMetadata.getOrDefault("mimeType", "").asInstanceOf[String]
+            val mgr = MimeTypeManagerFactory.getManager(node.getObjectType, mimeType)
+            mgr.review(identifier, node)
+        }
+		
 		reviewFuture.map(result => {
 			val updateReq = new Request()
 			updateReq.setContext(request.getContext)
@@ -30,5 +34,3 @@ object ReviewManager {
 		}).flatMap(f => f)
 	}
 }
-
-

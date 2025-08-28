@@ -4,7 +4,6 @@ object CompetencyConstants {
     val COMPETENCY_FRAMEWORK: String = "Competency Framework"
     val COMPETENCY_LEVEL: String     = "Competency Level"
 
-
     val TIME_LIMIT_ENABLED: String = "enabled"
     val TIME_LIMIT_DURATION: String = "duration"
     val TIME_LIMIT_VALUE: String    = "value"
@@ -16,11 +15,9 @@ object CompetencyConstants {
     val ENTRANCE_EXAM_COURSE_ID: String  = "courseId"
 
     val LEVEL_EXAM_COURSE_ID: String = "courseId"
-
 }
 
 object CompetencyErrorMessages {
-
     import CompetencyConstants._
 
     def missingEntranceExamCourseId(): String =
@@ -28,5 +25,4 @@ object CompetencyErrorMessages {
 
     def missingLevelExamCourseId(): String =
         s"levelExam.$LEVEL_EXAM_COURSE_ID is required"
-
 }

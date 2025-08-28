@@ -21,8 +21,9 @@ object PublishManager {
 	private val kfClient = new KafkaClient
 
 	def publish(request: Request, node: Node)(implicit oec: OntologyEngineContext, ec: ExecutionContext): Future[Response] = {
-		val primaryCategory = node.getMetadata.getOrDefault("primaryCategory", "").asInstanceOf[String]
-		CompetencyManager.getValidator(primaryCategory).validate(node)
+        // Competency validation check
+        val validation: Future[Unit] = CompetencyManager.validateNode(node)
+
 		val identifier: String = node.getIdentifier
 		val mimeType = node.getMetadata.getOrDefault(ContentConstants.MIME_TYPE, "").asInstanceOf[String]
 		val mgr = MimeTypeManagerFactory.getManager(node.getObjectType, mimeType)
@@ -33,7 +34,19 @@ object PublishManager {
 		val publishType = request.getContext.getOrDefault(ContentConstants.PUBLISH_TYPE, "").asInstanceOf[String]
 		node.getMetadata.put(ContentConstants.PUBLISH_TYPE, publishType)
 
-		val publishFuture: Future[scala.collection.Map[String, AnyRef]] = mgr.publish(identifier, node)
+		val publishFuture = validation.flatMap { _ =>
+            val identifier: String = node.getIdentifier
+            val mimeType = node.getMetadata.getOrDefault(ContentConstants.MIME_TYPE, "").asInstanceOf[String]
+            val mgr = MimeTypeManagerFactory.getManager(node.getObjectType, mimeType)
+
+            val publishCheckList = request.getContext.getOrDefault(ContentConstants.PUBLIC_CHECK_LIST, List.empty[String]).asInstanceOf[List[String]]
+            if (publishCheckList.isEmpty) node.getMetadata.put(ContentConstants.PUBLIC_CHECK_LIST, null)
+
+            val publishType = request.getContext.getOrDefault(ContentConstants.PUBLISH_TYPE, "").asInstanceOf[String]
+            node.getMetadata.put(ContentConstants.PUBLISH_TYPE, publishType)
+
+            mgr.publish(identifier, node)
+        }
 		publishFuture.map(result => {
 			// Push Instruction Event - Learning code has logic to send publish instruction to different topics based on mimeTypes. That logic is not implemented here due to deprecation of samza jobs.
 			pushInstructionEvent(identifier, node)
@@ -101,5 +114,3 @@ object PublishManager {
 		edata.put(ContentConstants.CONTENT_TYPE, metadata.get(ContentConstants.CONTENT_TYPE))
 	}
 }
-
-
