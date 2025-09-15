@@ -121,6 +121,14 @@ class CompetencyLevel extends CompetencyValidator {
 
             if (value.isEmpty) {
                 errors += s"timeLimit.duration.$TIME_LIMIT_VALUE is required"
+            } else {
+                // Validate that the value is a number
+                try {
+                    value.toDouble
+                } catch {
+                    case _: NumberFormatException =>
+                        errors += s"timeLimit.duration.$TIME_LIMIT_VALUE must be a valid number"
+                }
             }
 
             if (unit.isEmpty) {
@@ -134,12 +142,12 @@ class CompetencyLevel extends CompetencyValidator {
                                      metadata: Map[String, AnyRef],
                                      errors: ListBuffer[String]
                                  )(implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Future[Unit] = {
-        val courseId = exam.getOrElse(LEVEL_EXAM_COURSE_ID, "").toString.trim
-        if (courseId.isEmpty) {
-            errors += missingLevelExamCourseId()
+        val collectionId = exam.getOrElse(LEVEL_EXAM_COLLECTION_ID, "").toString.trim
+        if (collectionId.isEmpty) {
+            errors += missingLevelExamCollectionId()
             Future.unit
         } else {
-            validateCourseExists(courseId, "Level Exam", errors)
+            validateCourseExists(collectionId, "Level Exam", errors)
         }
     }
 
@@ -149,12 +157,12 @@ class CompetencyLevel extends CompetencyValidator {
                                     )(implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Future[Unit] = {
         val enabled = exam.getOrElse(ENTRANCE_EXAM_ENABLED, TIME_NO).toString
         if (enabled == TIME_YES) {
-            val courseId = exam.getOrElse(ENTRANCE_EXAM_COURSE_ID, "").toString.trim
-            if (courseId.isEmpty) {
-                errors += missingEntranceExamCourseId()
+            val collectionId = exam.getOrElse(ENTRANCE_EXAM_COLLECTION_ID, "").toString.trim
+            if (collectionId.isEmpty) {
+                errors += missingEntranceExamCollectionId()
                 Future.unit
             } else {
-                validateCourseExists(courseId, "Entrance Exam", errors)
+                validateCourseExists(collectionId, "Entrance Exam", errors)
             }
         } else {
             Future.unit

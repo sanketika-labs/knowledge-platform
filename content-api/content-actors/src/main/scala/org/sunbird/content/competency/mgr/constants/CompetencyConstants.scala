@@ -12,17 +12,17 @@ object CompetencyConstants {
     val TIME_NO: String       = "No"
 
     val ENTRANCE_EXAM_ENABLED: String = "enabled"
-    val ENTRANCE_EXAM_COURSE_ID: String  = "courseId"
+    val ENTRANCE_EXAM_COLLECTION_ID: String  = "collectionId"
 
-    val LEVEL_EXAM_COURSE_ID: String = "courseId"
+    val LEVEL_EXAM_COLLECTION_ID: String = "collectionId"
 }
 
 object CompetencyErrorMessages {
     import CompetencyConstants._
 
-    def missingEntranceExamCourseId(): String =
-        s"entranceExam.$ENTRANCE_EXAM_COURSE_ID is required when $ENTRANCE_EXAM_ENABLED=$TIME_YES"
+    def missingEntranceExamCollectionId(): String =
+        s"entranceExam.$ENTRANCE_EXAM_COLLECTION_ID is required when $ENTRANCE_EXAM_ENABLED=$TIME_YES"
 
-    def missingLevelExamCourseId(): String =
-        s"levelExam.$LEVEL_EXAM_COURSE_ID is required"
+    def missingLevelExamCollectionId(): String =
+        s"levelExam.$LEVEL_EXAM_COLLECTION_ID is required"
 }
