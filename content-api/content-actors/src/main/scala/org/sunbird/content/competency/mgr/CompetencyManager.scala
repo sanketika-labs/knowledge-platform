@@ -33,13 +33,13 @@ object CompetencyManager {
         }
     }
 
-    // Validate that the given courseId exists and is of contentType=Course and status=Live.
-    def validateCourseExists(courseId: String, fieldName: String, errors: ListBuffer[String])
+    // Validate that the given collectionId exists and is of contentType=Course and status=Live.
+    def validateCourseExists(collectionId: String, fieldName: String, errors: ListBuffer[String])
                             (implicit oec: OntologyEngineContext, ec: ExecutionContext, parentNode: Node): Future[Unit] = {
-        if (StringUtils.isBlank(courseId)) {
-            val msg = s"$fieldName courseId is missing"
+        if (StringUtils.isBlank(collectionId)) {
+            val msg = s"$fieldName collectionId is missing"
             errors += msg
-            Future.failed(new ClientException("ERR_BLANK_COURSE_ID", msg))
+            Future.failed(new ClientException("ERR_BLANK_COLLECTION_ID", msg))
         } else {
             val request = new Request()
             Option(request.getContext).getOrElse {
@@ -54,7 +54,7 @@ object CompetencyManager {
             val objectType = parentMetadata.getOrElse("objectType", "").toString.toLowerCase
 
             val contextMap = Map[String, AnyRef](
-                "identifier" -> courseId,
+                "identifier" -> collectionId,
                 "graph_id"   -> graphId,
                 "channel"    -> channel,
                 "schemaName" -> objectType,
@@ -62,25 +62,25 @@ object CompetencyManager {
                 "objectType" -> objectType
             )
             contextMap.foreach { case (k,v) => request.getContext.put(k,v) }
-            request.put("identifier", courseId)
+            request.put("identifier", collectionId)
             request.put("objectType", objectType)
 
             DataNode.read(request).flatMap { node =>
                 if (node == null) {
-                    val msg = s"$fieldName courseId $courseId not found"
+                    val msg = s"$fieldName collectionId $collectionId not found"
                     errors += msg
-                    Future.failed(new ClientException("ERR_COURSE_NOT_FOUND", msg))
+                    Future.failed(new ClientException("ERR_COLLECTION_NOT_FOUND", msg))
                 } else {
                     val metadata    = node.getMetadata.asScala
                     val status      = metadata.getOrElse("status", "").toString
                     val contentType = metadata.getOrElse("contentType", "").toString
 
                     if (!"Course".equalsIgnoreCase(contentType)) {
-                        val msg = s"$fieldName courseId $courseId has invalid contentType: $contentType (expected Course)"
+                        val msg = s"$fieldName collectionId $collectionId has invalid contentType: $contentType (expected Course)"
                         errors += msg
                         Future.failed(new ClientException("ERR_INVALID_CONTENT_TYPE", msg))
                     } else if (!"Live".equalsIgnoreCase(status)) {
-                        val msg = s"$fieldName courseId $courseId has invalid status: $status (expected Live)"
+                        val msg = s"$fieldName collectionId $collectionId has invalid status: $status (expected Live)"
                         errors += msg
                         Future.failed(new ClientException("ERR_INVALID_STATUS", msg))
                     } else {
